@@ -4,5 +4,5 @@ export const SignupValidation = z.object({
     name: z.string().min(2,{message: "Too short"}).max(50),
     username: z.string().min(2,{message: "Enter a Valid Name"}).max(50),
     email: z.string().email(),
-    password: z.string().min(6,{message: "Password must be at least 6 characters"}).max(50),
+    password: z.string().min(6,{message: "Password must be at least 6 characters"}),
 })
