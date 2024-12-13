@@ -11,6 +11,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { useToast } from "@/hooks/use-toast"
+
 import { Input } from "@/components/ui/input"
 import { SignupValidation } from '@/lib/validation'
 import Loader from '@/components/shared/Loader'
@@ -20,6 +22,7 @@ import { createUserAccount } from '@/lib/appwrite/api'
 
 
 const SignupForm = () => {
+  const { toast } = useToast()
   const isLoading = false
     // 1. Define your form.
     const form = useForm<z.infer<typeof SignupValidation>>({
@@ -37,7 +40,14 @@ const SignupForm = () => {
       // Do something with the form values.
 
       const newUser = await createUserAccount(values);
-      console.log(newUser)
+      if(!newUser){
+        return toast({
+          title: "Sign up failed.",
+          description: "Please try again!",
+        })
+
+        //const session = await signInAccount()
+      }
 
       // ✅ This will be type-safe and validated.
       console.log(values)
