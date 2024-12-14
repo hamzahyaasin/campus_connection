@@ -16,15 +16,19 @@ import { useToast } from "@/hooks/use-toast"
 import { Input } from "@/components/ui/input"
 import { SignupValidation } from '@/lib/validation'
 import Loader from '@/components/shared/Loader'
-import { Link } from 'react-router-dom'
-import { useCreateUserAccountMutatuion } from '@/lib/react-query/queriesAndMutations'
+import { Link, useNavigate } from 'react-router-dom'
+import { useCreateUserAccount } from '@/lib/react-query/queriesAndMutations'
+import { useUserContext } from '@/context/AuthContext'
 
 
 
 const SignupForm = () => {
   const { toast } = useToast()
+  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
+  const navigate = useNavigate();
 
-  const {mutateAsync: createUserAccount, isLoading: isCreatingUser} = useCreateUserAccountMutatuion();
+  const {mutateAsync: createUserAccount, isPending: isCreatingAccount} = useCreateUserAccount();
+  const {mutateAsync: SignInAccount, isPending: isSingingIn} = useSignInAccount();
 
     // 1. Define your form.
     const form = useForm<z.infer<typeof SignupValidation>>({
@@ -47,9 +51,32 @@ const SignupForm = () => {
           title: "Sign up failed.",
           description: "Please try again!",
         })
-
-        //const session = await signInAccount()
       }
+      const session = await SignInAccount({
+        email: values.email,
+        password: values.password,
+      })
+
+      if(!session){
+        return toast({
+          title: "Sign in failed.",
+          description: "Please try again!",
+        })
+      }
+
+      const isLoggedIn = await checkAuthUser();
+
+      if(isLoggedIn){
+        form.reset();
+        navigate("/");
+      } else {
+        return toast({
+          title: "Sign up failed.",
+          description: "Please try again!",
+      })
+        
+
+      
 
       // ✅ This will be type-safe and validated.
       console.log(values)
@@ -121,7 +148,7 @@ const SignupForm = () => {
             )}
           />
           <Button type="submit" className='shad-button_primary'>
-            {isCreatingUser ? (
+            {isCreatingAccount ? (
               <div className='flex-center gap-2'>
                 <Loader /> Loading...
                 </div>
@@ -141,5 +168,5 @@ const SignupForm = () => {
     </Form>
   )
 }
-
+};
 export default SignupForm

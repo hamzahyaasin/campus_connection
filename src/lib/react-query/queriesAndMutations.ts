@@ -9,7 +9,13 @@ import{
 import { createUserAccount } from '../appwrite/api'
 
 
-export const useCreateUserAccountMutatuion = () => {
+export const useCreateUserAccount = () => {
+    return useMutation({
+        mutationFn: (user: INewUser) => createUserAccount(user),
+    })
+}
+
+export const useSignInAccount  = () => {
     return useMutation({
         mutationFn: (user: INewUser) => createUserAccount(user),
     })
