@@ -61,13 +61,34 @@ export async function saveUserToDB(user: {
 // ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createEmailSession(user.email, user.password);
+    // Check if an active session exists
+    const existingSession = await account.get();
 
-    return session;
+    // If an active session exists, log the user is already signed in
+    if (existingSession) {
+      console.log("Session already exists:", existingSession);
+      return existingSession; // Return the active session
+    }
+  } catch (error: any) {
+    if (error.code !== 404) {
+      // Handle errors other than "no active session"
+      console.error("Error checking session:", error);
+      throw error; // Re-throw unexpected errors
+    }
+    // No active session found; continue to create a new one
+  }
+
+  try {
+    // Create a new session
+    const newSession = await account.createSession(user.email, user.password);
+    console.log("New session created:", newSession);
+    return newSession;
   } catch (error) {
-    console.log(error);
+    console.error("Error creating session:", error);
+    throw error; // Propagate the error for upstream handling
   }
 }
+
 
 // ============================== GET ACCOUNT
 export async function getAccount() {
