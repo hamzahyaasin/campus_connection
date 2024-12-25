@@ -1,20 +1,17 @@
-import { Outlet } from "react-router-dom";
-
-import Topbar from "@/components/shared/Topbar";
-import Bottombar from "@/components/shared/Bottombar";
-import LeftSidebar from "@/components/shared/LeftSidebar";
+import { Outlet, Navigate } from "react-router-dom";
 
 const RootLayout = () => {
+  const isAuthenticated = false; // Use your actual auth state here
+
+  // If not authenticated, redirect to sign-in
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" />;
+  }
+
   return (
-    <div className="w-full md:flex">
-      <Topbar />
-      <LeftSidebar />
-
-      <section className="flex flex-1 h-full">
-        <Outlet />
-      </section>
-
-      <Bottombar />
+    <div>
+      {/* Your layout structure here */}
+      <Outlet /> {/* This will render the child routes */}
     </div>
   );
 };

@@ -59,37 +59,33 @@ export async function saveUserToDB(user: {
 }
 
 // ============================== SIGN IN
+// src/lib/appwrite/api.ts
+
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    // Check if an active session exists
-    const existingSession = await account.get();
+    const session = await account.createSession(user.email, user.password);
+    
+    const currentAccount = await account.get();
+    
+    if (!currentAccount) throw new Error('Failed to get account details');
 
-    // If an active session exists, log the user is already signed in
-    if (existingSession) {
-      console.log("Session already exists:", existingSession);
-      return existingSession; // Return the active session
-    }
-  } catch (error: any) {
-    if (error.code !== 404) {
-      // Handle errors other than "no active session"
-      console.error("Error checking session:", error);
-      throw error; // Re-throw unexpected errors
-    }
-    // No active session found; continue to create a new one
-  }
+    const currentUser = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.equal("email", user.email)]
+    );
 
-  try {
-    // Create a new session
-    const newSession = await account.createSession(user.email, user.password);
-    console.log("New session created:", newSession);
-    return newSession;
+    if (!currentUser.documents.length) throw new Error('User not found in database');
+
+    return {
+      session,
+      user: currentUser.documents[0]
+    };
   } catch (error) {
-    console.error("Error creating session:", error);
-    throw error; // Propagate the error for upstream handling
+    console.error("SignIn Error:", error);
+    throw error;
   }
 }
-
-
 // ============================== GET ACCOUNT
 export async function getAccount() {
   try {

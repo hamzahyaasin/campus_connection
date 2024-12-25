@@ -39,9 +39,20 @@ export const useCreateUserAccount = () => {
 };
 
 export const useSignInAccount = () => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
-    mutationFn: (user: { email: string; password: string }) =>
-      signInAccount(user),
+    mutationKey: ['login'],
+    mutationFn: (user: { email: string; password: string }) => signInAccount(user),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
+    onError: (error: any) => {
+      console.error("Mutation Error:", error);
+      throw error;
+    }
   });
 };
 

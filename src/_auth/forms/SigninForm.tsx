@@ -18,6 +18,9 @@ const SigninForm = () => {
   const navigate = useNavigate();
   const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
+  // Extract mutateAsync and isLoading from the mutation
+  const { mutateAsync: signIn, isLoading } = useSignInAccount();
+
   const form = useForm<z.infer<typeof SigninValidation>>({
     resolver: zodResolver(SigninValidation),
     defaultValues: {
@@ -26,34 +29,48 @@ const SigninForm = () => {
     },
   });
 
-  // Queries
-  const { mutateAsync: signInAccount } = useSignInAccount();
-
-  // Handler
   async function onSubmit(values: z.infer<typeof SigninValidation>) {
     try {
-      const session = await signInAccount({
+      const { session, user } = await signIn({
         email: values.email,
         password: values.password,
       });
-
-      if (!session) {
-        toast({ title: "Something went wrong.", description: "Please try again." });
+  
+      if (!session || !user) {
+        toast({ 
+          title: "Login failed", 
+          description: "Please check your credentials and try again.",
+          variant: "destructive"
+        });
+        return;
       }
-
+  
       const isLoggedIn = await checkAuthUser();
-      console.log({ isLoggedIn });
+      
       if (isLoggedIn) {
         form.reset();
-
         navigate("/");
       } else {
-        toast({  title: "Something went wrong.", description: "Please try again."});
+        toast({ 
+          title: "Login failed", 
+          description: "Account exists but login failed. Please try again.",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.log({ error });
+    } catch (error: any) {
+      console.error("Form Submit Error:", error);
+      const errorMessage = 
+        error.message === 'User not found in database' 
+          ? "No account found with this email. Please sign up first."
+          : error.message || "An error occurred during login";
+      
+      toast({ 
+        title: "Error", 
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
-  };
+  }
 
   return (
     <Form {...form}>
@@ -98,8 +115,12 @@ const SigninForm = () => {
             )}
           />
 
-          <Button type="submit" className="shad-button_primary">
-            {isUserLoading ? (
+          <Button 
+            type="submit" 
+            className="shad-button_primary"
+            disabled={isLoading || isUserLoading}
+          >
+            {(isLoading || isUserLoading) ? (
               <div className="flex-center gap-2">
                 <Loader /> Loading...
               </div>
