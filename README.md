@@ -21,7 +21,7 @@ The campus Officials can have there verified account, societies can have dedicat
 
 ## Implementation of the application
 -- Fork the repository and run "npm install" to have all the packages needed.
--- Create a .env.local file to secretly store the API keys like (VITE_APPWRITE_PROJECT_ID='67599030001d897ade31'
+-- Create a .env.local file to secretly store the API keys like (VITE_APPWRITE_PROJECT_ID=''
 VITE_APPWRITE_URL='https://cloud.appwrite.io/v1'
 VITE_APPWRITE_STORAGE_ID=''
 VITE_APPWRITE_DATABASE_ID=''
